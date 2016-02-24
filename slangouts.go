@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"os/user"
 	"path"
 	"syscall"
 )
@@ -120,9 +119,14 @@ func (app *SlangoutsApp) saveConfig() error {
 }
 
 func getConfigPath() string {
-	user, err := user.Current()
-	OrDie(err)
-	return path.Join(user.HomeDir, ".slangouts", "config.json")
+	workingDir := "."
+	for _, name := range []string{"HOME", "USERPROFILE"} { // *nix, windows
+		if dir := os.Getenv(name); dir != "" {
+			workingDir = dir
+		}
+	}
+
+	return path.Join(workingDir, ".slangouts", "config.json")
 }
 
 func OrDie(e error) {
