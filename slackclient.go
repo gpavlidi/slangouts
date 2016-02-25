@@ -16,6 +16,7 @@ type SlackClient struct {
 	SelfId      string
 	Messages    chan HangoutsMessage
 	DonePolling chan bool
+	groups      []slack.Group
 }
 
 func (c *SlackClient) Init(apiToken string) error {
@@ -42,39 +43,70 @@ func (c *SlackClient) Init(apiToken string) error {
 }
 
 func (c *SlackClient) SendMessage(msg HangoutsMessage) error {
-	groups, err := c.Client.GetGroups(false)
-	if err != nil {
-		return err
+	var err error
+	// check local group cache first
+	existingGroup := c.GetGroupByPurpose(msg.conversationId)
+
+	// if not found update cache and check again
+	if existingGroup == nil {
+		c.UpdateGroups()
+		existingGroup = c.GetGroupByPurpose(msg.conversationId)
 	}
 
-	var existingGroup *slack.Group = nil
-	for _, group := range groups {
-
-		if group.Purpose.Value == msg.conversationId {
-			existingGroup = &group
-			break
-		}
-	}
+	// nowhere to be found, create a new group
 	if existingGroup == nil {
 		existingGroup, err = c.Client.CreateGroup(fmt.Sprint("hangouts-", msg.conversationId))
 		if err != nil {
 			return err
 		}
-		_, err = c.Client.SetGroupTopic(existingGroup.ID, msg.conversationName)
+		c.groups = append(c.groups, *existingGroup)
+
+		topic, err := c.Client.SetGroupTopic(existingGroup.ID, msg.conversationName)
 		if err != nil {
 			return err
 		}
-		_, err = c.Client.SetGroupPurpose(existingGroup.ID, msg.conversationId)
+		existingGroup.Topic.Value = topic
+
+		purpose, err := c.Client.SetGroupPurpose(existingGroup.ID, msg.conversationId)
 		if err != nil {
 			return err
 		}
+		existingGroup.Purpose.Value = purpose
 	} else {
 		if existingGroup.IsArchived {
 			err = c.Client.UnarchiveGroup(existingGroup.ID)
+			if err != nil {
+				return err
+			}
+			existingGroup.IsArchived = false
 		}
 	}
 
 	_, _, err = c.Client.PostMessage(existingGroup.ID, msg.message, slack.PostMessageParameters{Username: msg.senderName})
+	return err
+}
+
+func (c *SlackClient) GetGroupById(id string) *slack.Group {
+	for _, group := range c.groups {
+		if group.ID == id {
+			return &group
+		}
+	}
+	return nil
+}
+
+func (c *SlackClient) GetGroupByPurpose(purpose string) *slack.Group {
+	for _, group := range c.groups {
+		if group.Purpose.Value == purpose {
+			return &group
+		}
+	}
+	return nil
+}
+
+func (c *SlackClient) UpdateGroups() error {
+	var err error
+	c.groups, err = c.Client.GetGroups(false)
 	return err
 }
 
@@ -91,6 +123,9 @@ func (c *SlackClient) StartPolling() error {
 				return
 			case msg := <-rtm.IncomingEvents:
 				switch ev := msg.Data.(type) {
+				case *slack.ConnectedEvent:
+					// get available groups at slack so we can correlate them to a hangout id
+					c.groups = ev.Info.Groups
 				case *slack.MessageEvent:
 					// for first message specifically, check if it's older
 					// slack for some reason echos the last msg
@@ -104,7 +139,15 @@ func (c *SlackClient) StartPolling() error {
 					}
 
 					if ev.User == c.SelfId {
-						group := rtm.GetInfo().GetGroupByID(ev.Channel)
+						group := c.GetGroupById(ev.Channel)
+						if group == nil {
+							log.Println("Slack: Got msg from a group (", ev.Channel, ") not cached locally. Refreshing groups.")
+							c.UpdateGroups()
+							group = c.GetGroupById(ev.Channel)
+							if group == nil {
+								log.Println("Slack: Cant find group", ev.Channel, "even after updating Groups. Skipping message:", ev.Text)
+							}
+						}
 						if group != nil && strings.Contains(group.Topic.Value, "hangouts-") {
 							c.Messages <- HangoutsMessage{message: ev.Text, conversationId: group.Purpose.Value}
 						}

@@ -89,13 +89,13 @@ func (app *SlangoutsApp) Run() {
 			log.Println("Hangouts: ", msg)
 			err = app.slackClient.SendMessage(msg)
 			if err != nil {
-				log.Println(err)
+				log.Println("Slack SendMessage", msg, "failed", err)
 			}
 		case msg := <-app.slackClient.Messages:
 			log.Println("Slack: ", msg)
 			err = app.hangoutsClient.SendMessage(msg)
 			if err != nil {
-				log.Println(err)
+				log.Println("Hangout SendMessage", msg, "failed", err)
 			}
 		}
 	}
