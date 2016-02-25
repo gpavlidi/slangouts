@@ -41,8 +41,8 @@ docker run --rm -v "$GOPATH":/go -w /go/src/github.com/gpavlidi/slangouts -e GOO
 docker run --rm -v "$GOPATH":/go -w /go/src/github.com/gpavlidi/slangouts -e GOOS=linux -e GOARCH=arm -e GOARM=7 -e CGO_ENABLED=0 golang:1.4.2-cross go build -v -o ./builds/linux_arm7/slangouts
 
 # need to clean these up every time I rebuild darwin_amd64
-rm ../../../../pkg/darwin_amd64/github.com/nlopes/slack.a
-rm ../../../../pkg/darwin_amd64/golang.org/x/net/websocket.a
+go clean -i github.com/nlopes/slack
+go clean -i golang.org/x/net/websocket
 
 # to debug cross compiling
 docker run --rm -it -v "$GOPATH":/go -w /go/src/github.com/gpavlidi/slangouts golang:1.4.2-cross bash
