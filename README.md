@@ -9,13 +9,13 @@ First time your run Slangouts, it 'll ask you for access to both your Slack and 
 
 ## Usage
 You can download slangouts or build it yourself. Pre-built binaries are provided:
-- [Windows (64 bits)](https://github.com/gpavlidi/slangouts/tree/master/builds/windows_x64/slangouts.exe)
-- [Windows (32 bits)](https://github.com/gpavlidi/slangouts/tree/master/builds/windows_x86/slangouts.exe)
-- [Linux (64 bits)](https://github.com/gpavlidi/slangouts/tree/master/builds/linux_x64/slangouts)
-- [Linux (32 bits)](https://github.com/gpavlidi/slangouts/tree/master/builds/linux_x86/slangouts)
-- [Linux ARM7 (e.g. Pi)](https://github.com/gpavlidi/slangouts/tree/master/builds/linux_arm7/slangouts)
-- [Mac (32 bits)](https://github.com/gpavlidi/slangouts/tree/master/builds/mac_x86/slangouts)
-- [Mac (64 bits)](https://github.com/gpavlidi/slangouts/tree/master/builds/mac_x64/slangouts)
+- [Windows (64 bits)](https://raw.githubusercontent.com/gpavlidi/slangouts/master/builds/windows_x64/slangouts.exe)
+- [Windows (32 bits)](https://raw.githubusercontent.com/gpavlidi/slangouts/master/builds/windows_x86/slangouts.exe)
+- [Linux (64 bits)](https://raw.githubusercontent.com/gpavlidi/slangouts/master/builds/linux_x64/slangouts)
+- [Linux (32 bits)](https://raw.githubusercontent.com/gpavlidi/slangouts/master/builds/linux_x86/slangouts)
+- [Linux ARM7 (e.g. Pi)](https://raw.githubusercontent.com/gpavlidi/slangouts/master/builds/linux_arm7/slangouts)
+- [Mac (32 bits)](https://raw.githubusercontent.com/gpavlidi/slangouts/master/builds/mac_x86/slangouts)
+- [Mac (64 bits)](https://raw.githubusercontent.com/gpavlidi/slangouts/master/builds/mac_x64/slangouts)
 ```
 # see all available switches
 ./slangouts help
