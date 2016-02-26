@@ -66,8 +66,12 @@ func (c *HangoutsClient) StopPolling() {
 }
 
 func (c *HangoutsClient) SendMessage(msg HangoutsMessage) error {
+	// mark all events in this conversation as read
+	_, _ = c.Client.UpdateWatermark(msg.conversationId, c.lastSync)
+
 	_, err := c.Client.SendChatMessage(msg.conversationId, msg.message)
 	return err
+
 }
 
 func (c *HangoutsClient) poll() {
@@ -121,9 +125,6 @@ func (c *HangoutsClient) poll() {
 			// send message to channel
 			c.Messages <- HangoutsMessage{message: message, senderName: senderName, conversationName: conversationName, conversationId: *conversation.ConversationId.Id}
 		}
-
-		// mark all events in this conversation as read
-		_, _ = c.Client.UpdateWatermark(*conversation.ConversationId.Id, c.lastSync)
 	}
 	return
 }
