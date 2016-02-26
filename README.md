@@ -20,7 +20,10 @@ You can download slangouts or build it yourself. Pre-built binaries are provided
 # see all available switches
 ./slangouts help
 
-# example
+# run with default settings
+./slangouts
+
+# pass parameters
 ./slangouts --config ~/.slangouts/config.json --poll 10 
 ```
 
