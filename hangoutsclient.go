@@ -122,6 +122,18 @@ func (c *HangoutsClient) poll() {
 				message = fmt.Sprint(message, *segment.Text)
 			}
 
+			// add attachments if they exist
+			for _, attachment := range event.ChatMessage.MessageContent.Attachment {
+				if attachment.EmbedItem != nil {
+					if attachment.EmbedItem.Id != nil {
+						message = fmt.Sprint(message, "\n", *attachment.EmbedItem.Id)
+					}
+					if attachment.EmbedItem.PlusPhoto != nil {
+						message = fmt.Sprint(message, "\n", *attachment.EmbedItem.PlusPhoto.Url)
+					}
+				}
+			}
+
 			// send message to channel
 			c.Messages <- HangoutsMessage{message: message, senderName: senderName, conversationName: conversationName, conversationId: *conversation.ConversationId.Id}
 		}
