@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -149,7 +150,15 @@ func (c *SlackClient) StartPolling() error {
 							}
 						}
 						if group != nil && strings.Contains(group.Topic.Value, "hangouts-") {
-							c.Messages <- HangoutsMessage{message: ev.Text, conversationId: group.Purpose.Value}
+							// links are enclosed in <> - remove them
+							linkRegex := regexp.MustCompile("^<(.*)>$")
+							pipeRegex := regexp.MustCompile("(.*)\\|(.*)")
+							parsedText := ev.Text
+							if linkRegex.MatchString(parsedText) {
+								parsedText = pipeRegex.ReplaceAllString(linkRegex.ReplaceAllString(parsedText, "$1"), "$1")
+							}
+
+							c.Messages <- HangoutsMessage{message: parsedText, conversationId: group.Purpose.Value}
 						}
 					}
 				case *slack.RTMError:

@@ -46,6 +46,7 @@ docker run --rm -v "$GOPATH":/go -w /go/src/github.com/gpavlidi/slangouts -e GOO
 # need to clean these up every time I rebuild darwin_amd64
 go clean -i github.com/nlopes/slack
 go clean -i golang.org/x/net/websocket
+go clean -i github.com/codegangsta/cli
 
 # to debug cross compiling
 docker run --rm -it -v "$GOPATH":/go -w /go/src/github.com/gpavlidi/slangouts golang:1.4.2-cross bash
